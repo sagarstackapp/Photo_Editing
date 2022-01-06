@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:image_editing/common/widget/rotate_widget.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:screenshot/screenshot.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -98,8 +98,10 @@ class _HomeScreenState extends State<HomeScreen> {
         .capture(delay: const Duration(milliseconds: 10))
         .then((Uint8List image) async {
       if (image != null) {
-        final imagePath = await Directory('/storage/emulated/0/Photo Edit/')
-            .create(recursive: true);
+        final imagePath = Platform.isIOS
+            ? await getApplicationDocumentsDirectory()
+            : await Directory('/storage/emulated/0/Photo Edit/')
+                .create(recursive: true);
         String imagePaths =
             imagePath.path + 'PhotoEdit${DateTime.now().toIso8601String()}.png';
         log('Image Paths --> $imagePaths');
