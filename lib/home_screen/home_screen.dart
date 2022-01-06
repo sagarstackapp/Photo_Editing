@@ -1,8 +1,12 @@
+import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:image_editing/common/widget/rotate_widget.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:screenshot/screenshot.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key key}) : super(key: key);
@@ -14,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 enum ImageType { network, asset, file, memory }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final ScreenshotController screenshotController = ScreenshotController();
   final ImagePicker imagePicker = ImagePicker();
   List<Widget> uploadedImage = [];
 
@@ -26,31 +31,24 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           primary: false,
           children: [
-            Container(
-              height: MediaQuery.of(context).size.height / 3,
-              margin: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/background_eraser.jpg'),
-                  fit: BoxFit.fill,
+            Screenshot(
+              controller: screenshotController,
+              child: Container(
+                height: MediaQuery.of(context).size.height / 3,
+                margin: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/background_eraser.jpg'),
+                    fit: BoxFit.fill,
+                  ),
                 ),
-              ),
-              child: Stack(
-                children: [
-                  RotateScreen(notifier: ValueNotifier(Matrix4.identity())),
-                  ...uploadedImage,
-                  // RotateScreen(
-                  //   imageType: ImageType.asset,
-                  //   imageName: 'assets/images/slide_1.jpeg',
-                  //   notifier: ValueNotifier(Matrix4.identity()),
-                  // ),
-                  // RotateScreen(
-                  //   imageType: ImageType.network,
-                  //   imageName: 'https://picsum.photos/id/117/1544/1024',
-                  //   notifier: ValueNotifier(Matrix4.identity()),
-                  // ),
-                ],
+                child: Stack(
+                  children: [
+                    RotateScreen(notifier: ValueNotifier(Matrix4.identity())),
+                    ...uploadedImage,
+                  ],
+                ),
               ),
             ),
             Row(
@@ -95,5 +93,19 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void saveImage() {}
+  saveImage() async {
+    await screenshotController
+        .capture(delay: const Duration(milliseconds: 10))
+        .then((Uint8List image) async {
+      if (image != null) {
+        final imagePath = await Directory('/storage/emulated/0/Photo Edit/')
+            .create(recursive: true);
+        String imagePaths =
+            imagePath.path + 'PhotoEdit${DateTime.now().toIso8601String()}.png';
+        log('Image Paths --> $imagePaths');
+        File file2 = File(imagePaths);
+        file2.writeAsBytesSync(image);
+      }
+    });
+  }
 }
