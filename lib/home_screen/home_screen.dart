@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_editing/common/widget/rotate_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -97,7 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
     await screenshotController
         .capture(delay: const Duration(milliseconds: 10))
         .then((Uint8List image) async {
-      if (image != null) {
+      final status = await Permission.storage.request();
+      if (image != null && status.isGranted) {
         final imagePath = Platform.isIOS
             ? await getApplicationDocumentsDirectory()
             : await Directory('/storage/emulated/0/Photo Edit/')
